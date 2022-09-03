@@ -1,5 +1,7 @@
+from genericpath import isfile
 import os, sys, random
 from datetime import datetime
+from time import sleep
 from pynput import keyboard
 from pynput.mouse import Controller as MouseController
 
@@ -20,9 +22,11 @@ def destroyDiary():
     Destroys all diary logs permanently. Recommened to enable this feature only with confirming password.
     """
     global DIARY_PATH
-    for dirpath, dirnames, filenames in os.walk(DIARY_PATH):
-        os.chdir(DIARY_PATH)
-        for file in filenames: os.remove(file)
+
+    os.chdir(os.path.expanduser(DIARY_PATH))
+    for el in os.listdir():
+        if isfile(el) and el.endswith(".txt"): os.remove(el)
+    
 
 def lockOrUnlock(passwd = ""):
     """
@@ -67,7 +71,7 @@ def log(text):
 
     now = datetime.now()
     file = open(os.path.expanduser(DIARY_PATH + "/" + now.strftime("%d") + now.strftime("%m") + "-" + now.strftime("%Y") + ".txt"), "a")
-    file.write("\n+\nLog made at" + now.strftime("%X") + now.strftime("%z") + "\nLog:\n"+ text + "\n+\n")
+    file.write("\n+\nLog made at " + now.strftime("%X") + now.strftime("%z") + "\nLog:\n"+ text + "\n+\n")
     file.close()
 
 
@@ -116,14 +120,16 @@ def listenToKeyboard_makeNewLog():
         global keyboardListenedText, monitorKeyboard, waitingForCommand, command
         if monitorKeyboard:
             try: keyboardListenedText += key.char
-            except AttributeError: keyboardListenedText += "\_(" + str(key) + ")_/"
+            except AttributeError: 
+                if key == keyboard.Key.space: keyboardListenedText += " "
+                else: keyboardListenedText += "\_(" + str(key) + ")_/"
 
         #Command part
         try: 
             specialKey = "7"
             if waitingForCommand == True and key.char == specialKey:
                 if command == "exit": 
-                    raise Exception("Keyboard listener is destroyed")
+                    raise Exception("-> Keyboard stopped listening")
                 elif command == "stop":
                     keyboardListenedText += "\_(Keyboard stop logging)_/"
                     monitorKeyboard = False
@@ -166,23 +172,74 @@ def makeNewDiaryLog():
         try: listenToKeyboard_makeNewLog()
         except: saveLog(keyboardListenedText)
 
+def removeDiaryLog():
+    global DIARY_PATH
+    logs = []
+    os.chdir(os.path.expanduser(DIARY_PATH))
+    for el in os.listdir():
+        if isfile(el) and el.endswith(".txt"): logs.append(el)
+    
+    if logs == []:
+        print("-> There are currently no diary logs")
+        return
+    print("-> Which log do you wanna delete?")
+    question = ""
+    answers = []
+    for index, file in enumerate(logs):
+        question += "->    " + str(index + 1) + ". " + file + "\n"
+        answers.append(str(index + 1))
+
+    answ = ask(question=question, answers=answers)
+    print("-> This action can't be undone")
+    if ask(question="-> Are you sure about that?(y/n)\n", answers=["y", "n"]) == "y":
+        filename = logs[int(answ) - 1]
+        with open(filename, "r") as f:
+            print("-> Here is the content of the log:\n")
+            print(f.read())
+            f.close()
+        os.remove(filename)
+        print("-> The log is successfully deleted.")
+
+def readDiaryLog():
+    global DIARY_PATH
+    logs = []
+    os.chdir(os.path.expanduser(DIARY_PATH))
+    for el in os.listdir():
+        if isfile(el) and el.endswith(".txt"): logs.append(el)
+    
+    if logs == []:
+        print("-> There are currently no diary logs")
+        return
+    print("-> Which log do you wanna read?")
+    question = ""
+    answers = []
+    for index, file in enumerate(logs):
+        question += "->    " + str(index + 1) + ". " + file + "\n"
+        answers.append(str(index + 1))
+
+    answ = ask(question=question, answers=answers)
+    with open(logs[int(answ) - 1], "r") as f:
+        print(f.read())
+
 
 while True:
     if REQUIRE_PASSWORD:
         while LOCKED:
             if not lockOrUnlock(input("-> Please write the password to access the programm:\n")): i_didnt_understand()
 
-    answer = ask(question="-> What do you want to do?\n->   1. Make a new diary log\n->   2. Read a diary log\n->   3. Remove all previous diary logs\n->   4. Exit\n", answers=["1", "2", "3", "4"])
+    answer = ask(question="-> What do you want to do?\n->   1. Make a new diary log\n->   2. Read a diary log\n->   3. Remove all previous diary logs\n->   4. Remove a diary log\n->   5. Exit\n", answers=["1", "2", "3", "4", "5"])
     if answer == "1": makeNewDiaryLog()
-    elif answer == "2": pass
+    elif answer == "2": readDiaryLog()
     elif answer == "3":
         LOCKED = True
         if lockOrUnlock(input("-> Please write the password to access the function:\n")): 
-            answ = ask(question="-> Are you sure about that?\n->All logs will be deleted permanently.\n->There's no way back.\n->(sure/back)\n", answers=["sure", "back"])
+            answ = ask(question="-> Are you sure about that?\n-> All logs will be deleted permanently.\n-> There's no way back.\n->(sure/back)\n", answers=["sure", "back"])
             if answ == "sure":
                 print("-> Okay, it looks like you are 100% sure.")
+                sleep(2)
                 print("-> Deleting all your logs...")
                 destroyDiary()
-                print("The diary is destroyed.")
+                print("-> The diary is destroyed.")
         else: i_didnt_understand(askToDoAnotherTime=False)
-    elif answer == "4": exit()
+    elif answer == "4": removeDiaryLog()
+    elif answer == "5": exit()
