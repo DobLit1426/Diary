@@ -1,9 +1,9 @@
 from genericpath import exists, isfile
-from http.client import GONE
-from lib2to3.pgen2.token import NAME
+# from http.client import GONE
+# from lib2to3.pgen2.token import NAME
 import os, sys, random, webbrowser
-from tkinter import E
-from typing import Optional
+# from tkinter import E
+# from typing import Optional
 from datetime import datetime
 from time import sleep
 from pynput import keyboard
@@ -196,7 +196,15 @@ def log(text: str):
     global DIARY_PATH, log_made_at, log_noun
 
     now = datetime.now()
-    path = "{diaryPath}/{day}-{month}-{year}.txt".format(diaryPath=os.path.expanduser(DIARY_PATH), day=now.strftime("%d"), month=now.strftime("%m"), year=now.strftime("%Y"))
+    path = "{diaryPath}/{year}-{month}-{day}_{hour}-{minute}-{second}.txt".format(
+        diaryPath=os.path.expanduser(DIARY_PATH),
+        year=now.strftime("%Y"),
+        month=now.strftime("%m"),
+        day=now.strftime("%d"),
+        hour=now.strftime("%H"),
+        minute=now.strftime("%M"),
+        second=now.strftime("%S")
+    )
     
     previousLogs = ""
     try: previousLogs = decrypt(open(path, "rb").read())
@@ -507,7 +515,8 @@ if exists(CONFIGURATIONS_PATH):
             PASSWORD = configurations[0]
             REQUIRE_PASSWORD = fromStrToBool(configurations[1])
             LANGUAGE = configurations[2]
-            setTitlesComparingToLanguage(LANGUAGES_SETS[LANGUAGE])
+        
+        setTitlesComparingToLanguage(LANGUAGES_SETS[LANGUAGE])
 else: 
     setup()
     input()
@@ -541,6 +550,6 @@ while True:
                 wr(all_logs_deleted)
             else: continue
         else: sorry_i_didnt_understand(askToDoAnotherTime=False)
-    elif answer == what_do_you_wanna_do_answers[3]:  removeDiaryLog()
+    elif answer == what_do_you_wanna_do_answers[3]: removeDiaryLog()
     elif answer == what_do_you_wanna_do_answers[4]: rateTheApp()
     elif answer == what_do_you_wanna_do_answers[5]: exit()
