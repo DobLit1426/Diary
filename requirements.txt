@@ -1,0 +1,10 @@
+cffi==1.16.0
+cryptography==42.0.5
+dictionaries==0.0.2
+dill==0.3.8
+py-flags==1.1.4
+pycparser==2.22
+pydecor==2.0.1
+pyGenericPath==0.2.1
+pynput==1.7.6
+six==1.16.0
