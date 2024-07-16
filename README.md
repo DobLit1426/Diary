@@ -62,7 +62,7 @@
 
 <h2>Note to listening to the keyboard</h2>
 <ul>
-  <li>At least on MacOS you have to allow Input Monitoring for Terminal in Settings -> Privacy And Security -> Input Monitoring</li>
+  <li>On MacOS you have to allow Input Monitoring for Terminal in Settings -> Privacy And Security -> Input Monitoring</li>
   <li>To finish listening to the keyboard write "7end7"</li>
   <li>To temporarily stop listening to the keyboard write "7stop7" and write "7continue7" to continue listening</li>
 </ul>
